@@ -1,0 +1,23 @@
+name: C# checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build --configuration Release
+      - name: Check console output
+        shell: bash
+        run: |
+          run() { dotnet run --no-build --configuration Release -- "$@"; }
+          [[ "$(run)" == 'Adolescente' ]]
+          [[ "$(run 11)" == 'Criança' && "$(run 12)" == 'Adolescente' ]]
+          [[ "$(run 17)" == 'Adolescente' && "$(run 18)" == 'Adulto' ]]
+          [[ "$(run 59)" == 'Adulto' && "$(run 60)" == 'Idoso' ]]
+          if message=$(run -1 2>&1); then exit 1; fi
+          [[ "$message" == 'Informe uma idade inteira não negativa.' ]]
